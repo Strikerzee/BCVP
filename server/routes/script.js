@@ -1,7 +1,7 @@
-let mysql = require('mysql');
+const   mysql = require('mysql');
+const bcrypt = require('bcrypt');
 let router = require('express').Router();
 let bodyparser = require('body-parser');
-const bcrypt = require('bcrypt');
 var saltrounds = 10;
 
 let urlencodedparser = bodyparser.urlencoded({extended: false});
@@ -13,12 +13,14 @@ router.options('/login', (req, res)=>{
     res.set('Access-Control-Allow-Headers', 'Content-Type');
     res.send();
 })
-let connection = mysql.createConnection({
+
+var connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: '',
     database: 'sampledatabase'
-})
+});
+
 connection.connect( (error) => {
     if(!!error)
     {
@@ -29,7 +31,6 @@ connection.connect( (error) => {
         console.log("Successful Connection"); 
     }
 });
-
 function isEmpty(obj) {
     for(var key in obj) {
         if(obj.hasOwnProperty(key))
@@ -47,7 +48,7 @@ function set_token_null(obj,resp)
         else
          resp.send("token did not match logging out\n");
     })
-};
+}
 
 function generate_token(obj,resp) {
     bcrypt.hash(obj,saltrounds,function(err,hash)
@@ -76,6 +77,27 @@ function generate_token(obj,resp) {
         }
     })
 }
+// app.get('/',function(req,resp){
+//     var hi = "5568"
+//     var sql = "select * from People where VoterID = ?";
+//     connection.query(sql, hi, (err,rows,fields) => {
+//         if(err)
+//         {
+//             // connection.release();
+//             console.log("hihihihihi");
+//             resp.send(err);  
+//         }
+//         else{
+//             if(isEmpty(rows))
+//              {
+//                  console.log("VoterID or Passwor")
+//              }
+//         }
+//     });
+    
+    
+// });
+
 
 router.post('/login',function(req,resp){
     
@@ -208,18 +230,4 @@ router.post('/dashboard',function(req,resp){
     });
 })
 
-// router.post('/login', urlencodedparser, (req, res)=>{
-//     console.log('Login request received');
-//     let cred = req.body;
-//     let query = "select username, password from userData where username = " + cred.username + " and password = " + cred.password;
-//     connection.query(query, (err, rows)=>{
-//         if(err)
-//             console.log(err.stack);
-//         else if(rows.length)
-//             res.send('<p> You are logged in! </p>');
-//         else
-//             res.send('<p> Invalid Credentials </p>')
-//     })
-// })
 
-module.exports = router;
