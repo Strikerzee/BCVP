@@ -7,7 +7,7 @@ var saltrounds = 10;
 let urlencodedparser = bodyparser.urlencoded({extended: false});
 let jsonencodedparser = bodyparser.json();
 
-router.options('/login', (req, res)=>{
+router.options('/login', (req, res) => {
     res.set('Access-Control-Allow-Methods', 'OPTIONS, POST');
     res.set('Access-Control-Allow-Origin', '*');
     res.set('Access-Control-Allow-Headers', 'Content-Type');
@@ -151,18 +151,14 @@ router.post('/submit',function(req,resp){
             {
                 connection.query(sql1,id,(error,rows) => {
                     console.log("user has voted");
-
                 });
                 console.log("token matched");    
                 generate_token(id,resp);
-                
             }
             else
             {
                 set_token_null(id,resp);
                 console.log("token did not match"); 
-
-            
             }
 
         }
@@ -188,15 +184,12 @@ router.post('/dashboard',function(req,resp){
             var o_token = rows[0].token;
             if(o_token == null)
             {
-                
                 set_token_null(id,resp);
             }
-            else if( token.trim() == o_token.toString())
+            else if(token.trim() == o_token.toString())
             {
-                
                 console.log("token matched");    
                 generate_token(id,resp);
-                
             }
             else
             {
