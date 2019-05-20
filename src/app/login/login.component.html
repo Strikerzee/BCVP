@@ -1,15 +1,10 @@
-<form [formGroup]="loginForm" class="form-horizontal">
-  <label for="username" class="control-label col-lg-4 col-lg-offset-4"> username </label>
-  <input type="text" id="username" class="form-control" formControlName="username" required>
-  <div *ngIf="loginForm.get('username').invalid"><span class="error"> &#x2716; This field cann't be empty</span></div>
-  <hr />
-  <label for="password" class="control-label col-sm-2"> Password </label>
-  <input type="password" id="password" class="form-control" formControlName="password" required>
-  <div *ngIf="loginForm.controls.password.errors"><span class="error"> &#x2716; Password isn't valid</span></div>
-  <hr />
-  <label for="cnfpassword" class="control-label col-sm-2"> Confirm Password </label>
-  <input type="password" id="cnfpassword" class="form-control" formControlName="cnfpassword" required>
-  <div *ngIf="loginForm.controls.cnfpassword.errors"><span class="error"> &#x2716; Passwords don't match</span></div>
+<form [formGroup]="loginForm" class="login-form">
+  <h1 id='login-heading'> Log In </h1>
+  <label for="username"> Username </label> <br />
+  <input type="text" id="username" class="user" formControlName="username" required>
+  <br />
+  <label for="password"> Password </label> <br />
+  <input type="password" id="password" class="password" formControlName="password" required>
   <hr />
   <button type="submit" class="form-control btn btn-outline-success" (click)="submit()">LogIn</button>
 </form>

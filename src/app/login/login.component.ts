@@ -9,12 +9,11 @@ import { SendLoginDataService } from '../send-login-data.service';
 })
 export class LoginComponent{
   loginForm = new FormGroup({
-    username: new FormControl('', Validators.nullValidator),
-    password: new FormControl('', [Validators.pattern(/^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,}$/)]),
-    cnfpassword: new FormControl('', this.cnfpass)
+    username: new FormControl('', [Validators.pattern(/.+/g)]),
+    password: new FormControl('', [Validators.pattern(/.+/g)])
   })
   submit(){
-    if(!this.loginForm.controls.username.errors && !this.loginForm.controls.password.errors && !this.loginForm.controls.cnfpassword.errors)
+    if(!this.loginForm.controls.username.errors && !this.loginForm.controls.password.errors)
     fetch('https://localhost:8443/users/login',{
       method: "POST",
       mode: "cors",
@@ -26,17 +25,5 @@ export class LoginComponent{
         password: this.loginForm.value.password
       })
     })
-  }
-  cnfpass(control: FormControl) {
-    let cnfpass = control.value;
-    if(control.parent){
-      let pass = control.parent.value.password;
-      if(!cnfpass || (cnfpass && cnfpass != pass)){
-        return{
-          Error: "passwords don't match"
-        }
-      }
-      return null;
-    }
   }
 }
