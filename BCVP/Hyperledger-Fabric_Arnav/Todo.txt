@@ -1,0 +1,4 @@
+Change the code for deployment on any Ubuntu PC
+Automatically add crpyto-material to the crypto-config folder
+
+Merge routes and server.js with app.js
