@@ -1,6 +1,0 @@
-Process login object
-Return response in JSON format
-Return the token
-
-Merge with app.js of Hyperledger
-
