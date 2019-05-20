@@ -1,6 +1,0 @@
-peer:
-    pki:
-        tls:
-            enabled: true
-            rootcert:
-                file: "/var/hyperledger/production/.membersrvc/tlsca.cert"
