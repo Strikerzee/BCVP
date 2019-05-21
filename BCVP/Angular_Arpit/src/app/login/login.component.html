@@ -1,0 +1,28 @@
+<form [formGroup]="userForm" class="login-form" (ngSubmit)="onSubmit()">
+  <h3 id='login-heading'> 
+    Log in with voter ID
+  </h3>
+  <div class="form-group">
+    <label for="username" class="control-label"> 
+      Username 
+    </label> 
+    <br />
+    <input [ngClass]="{ 'has-error': invalidVoterID() }" type="text" id="username" class="user form-control" formControlName="username" required>
+		<p *ngIf="invalidVoterID()" id="username_error" class="help-block">{{this.serviceErrors.username || 'Invalid username.'}}</p>
+  </div>
+  <br />
+  <div class="form-group">
+  <label for="password" class="control-label"> 
+    Password 
+  </label>
+  <br />
+  <input [ngClass]="{ 'has-error': invalidPassword() }" type="password" id="password" class="password form-control" formControlName="password" required>
+  <p *ngIf="invalidPassword()" id="password_error" class="help-block">{{this.serviceErrors.password || 'Invalid password.'}}</p>
+  </div>
+  <hr />
+  <div class="form-group">
+    <button type="submit" class="form-control btn btn-outline-success">
+      Login
+    </button>
+  </div>
+</form>
