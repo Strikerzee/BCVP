@@ -4,8 +4,10 @@ let fs = require('fs');
 let path = require('path')
 let login = require('./routes/login.js');
 
-
 let app = express();
+app.options('*', cors());
+app.use(cors());
+
 app.use('/v1/login-backend', login);
 
 app.get('/', (req, res)=>{
@@ -17,7 +19,8 @@ const options = {
     cert: fs.readFileSync(path.resolve(__dirname + '/../secure/ryans-cert.pem'))
 }
 
-https.createServer(options, app).listen(4000, 'localhost', (error)=>{
+https.createServer(options, app).listen(4000, 'localhost', (error) => {
+    
     if(error)
     {
         throw error;

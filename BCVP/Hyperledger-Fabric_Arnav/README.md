@@ -7,6 +7,11 @@
 	*can see results only after voting phase
 
 5. #Need to merge Node.js backends for registration of user of Orgs, voting (invoke), see result (query), automate token consumption
+a. On POST /vote endpoint, invoke chaincode
+b. On GET /results endpoint, query result
+c. HLF Tokens need to be consumed once obtained.
+d. WHEN TO GET TOKEN?
+
 6. #Create separate credentials for Election Commission
 
 7. **Runs using temporary docker container (robust storage like cloud/ file store)
