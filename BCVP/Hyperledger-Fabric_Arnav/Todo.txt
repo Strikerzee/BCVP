@@ -1,0 +1,8 @@
+Will NOT work for any Ubuntu PC
+Need to manually add Crypto material to the crypto-config folder
+
+
+Change the code for deployment on any Ubuntu PC
+Automatically add crpyto-material to the crypto-config folder
+
+Merge routes and server.js with app.js
