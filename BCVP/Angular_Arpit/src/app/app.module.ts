@@ -8,7 +8,6 @@ import { LoginComponent } from './login/login.component';
 import { ReactiveFormsModule } from '@angular/forms'
 import { SendLoginDataService } from './services/send-login-data.service';
 import { VoteComponent } from './vote/vote.component';
-import { HomeComponent } from './home/home.component';
 import { DataService } from './services/data.service';
 
 @NgModule({
@@ -16,19 +15,15 @@ import { DataService } from './services/data.service';
     AppComponent,
     LoginComponent,
     VoteComponent,
-    HomeComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     ReactiveFormsModule,
     HttpClientModule,
-    RouterModule.forRoot([{
-      path: '',
-      component: HomeComponent
-    },
+    RouterModule.forRoot([
     {
-      path: 'login',
+      path: '',
       component: LoginComponent
     },
     {
