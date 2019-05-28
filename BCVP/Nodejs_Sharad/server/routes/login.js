@@ -7,7 +7,7 @@ var saltrounds = 10;
 let urlencodedparser = bodyparser.urlencoded({extended: false});
 let jsonencodedparser = bodyparser.json();
 
-router.options('/v1/login-backend', (req, res) => {
+router.options('/login', (req, res) => {
     res.set('Access-Control-Allow-Methods', 'OPTIONS, POST');
     res.set('Access-Control-Allow-Origin', '*');
     res.set('Access-Control-Allow-Headers', 'Content-Type');
