@@ -38,7 +38,7 @@ function isEmpty(obj) {
     return true;
 };
 
-function set_token_null(obj, resp)
+function set_token_null(obj)
 {
     resp.setHeader('Content-Type', 'application/json');
     connection.query("update People set token = NULL where VoterID = ?",obj, (err, rows) => {
@@ -50,7 +50,7 @@ function set_token_null(obj, resp)
     })
 };
 
-function generate_token(obj, resp) {
+function generate_token(obj, resp,dash) {
     resp.setHeader('Content-Type', 'application/json');
     bcrypt.hash(obj,saltrounds, function(err,hash)
     {
@@ -70,15 +70,44 @@ function generate_token(obj, resp) {
                 }
                 else
                 {
-                    resp.end(JSON.stringify({ hash: hash }));
-                    // resp.send(hash);
+                    if(dash == false)
+                    {
+                        resp.json({ 
+                            token: hash,
+                            user_id: id
+                        });
+                    }
+                    
+                    else if(dash == true)
+                    {
+                        // resp.send(hash);
+                        query_for_candidates = "select * from Candidates"
+                        connection.query(query_for_candidates,(er,row) =>{
+                            if(er)
+                            {
+                                throw er;
+                                
+                            }
+                            else
+                            {
+                                let response = {
+                                    candidate_details: row,
+                                    user_details: {
+                                        token: hash,
+                                        user_id: id
+                                    }
+                                }
+                                resp.json(response);
+                            }
+                        })
+                    }
                 }
             })
         }
     })
 }
 
-router.post('/v1/login-backend', function(req, resp) {
+router.post('/v1/login-backend', jsonencodedparser, function(req, resp) {
     resp.setHeader('Content-Type', 'application/json');
     var id =  req.body.id;
     var password = req.body.password;
@@ -111,7 +140,7 @@ router.post('/v1/login-backend', function(req, resp) {
                             console.log("User is logged in");
                             resp.end(JSON.stringify({ success: true, message: "User is logged in" }));
                             // resp.send("user is logged in\n");
-                            generate_token(id, resp);
+                            generate_token(id, resp,false);
                         }
                         else if(res == false)
                         {
@@ -126,7 +155,7 @@ router.post('/v1/login-backend', function(req, resp) {
     });
 });
 
-router.post('/v1/submit', function(req, resp) {
+router.post('/v1/submit',jsonencodedparser, function(req, resp) {
     resp.setHeader('Content-Type', 'application/json');
     var id = req.body.id;
     var token =  req.body.token;
@@ -157,11 +186,13 @@ router.post('/v1/submit', function(req, resp) {
                     console.log("user has voted");
                 });
                 console.log("token matched");    
-                generate_token(id, resp);
+                set_token_null(id);
+                resp.end(JSON.stringify({ success: true, message: "User has Voted" }));
             }
             else
             {
-                set_token_null(id, resp);
+                set_token_null(id);
+                resp.end(JSON.stringify({ success: false, message: "token did not match logging out" }));
                 console.log("token did not match"); 
             }
 
@@ -169,7 +200,7 @@ router.post('/v1/submit', function(req, resp) {
     });
 })
 
-router.post('/v1/dashboard', function(req, resp) {
+router.post('/v1/dashboard', jsonencodedparser,function(req, resp) {
     resp.setHeader('Content-Type', 'application/json');
     var id = req.body.id;
     var token =  req.body.token;
@@ -190,16 +221,17 @@ router.post('/v1/dashboard', function(req, resp) {
             var o_token = rows[0].token;
             if(o_token == null)
             {
-                set_token_null(id, resp);
+                set_token_null(id);
             }
             else if(token.trim() == o_token.toString())
             {
                 console.log("token matched");    
-                generate_token(id, resp);
+                generate_token(id, resp, true);
             }
             else
             {
-                set_token_null(id, resp);
+                set_token_null(id);
+                resp.end(JSON.stringify({ success: false, message: "token did not match logging out" }));
                 console.log("token did not match"); 
             }
 
