@@ -1,30 +1,17 @@
 import { Injectable } from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { DataService } from './data.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class ElectionCandidateService {
+export class ElectionCandidateService extends DataService{
 
-  constructor(private http: HttpClient) {
+  // constructor(http: HttpClient) {
+  //   super('https://localhost:4000/v1/login-backend/login', http);
+  // }
 
-  }
-
-  getData(url: string){
-    let token = localStorage.getItem('token');
-    if(token)
-      return this.http.get(url, {
-        headers:{
-          authorization: 'Digest ' + token,
-          credentials: 'include'
-        }
-      })
-    else{
-      return new Observable((subscriber)=>{
-        subscriber.next();
-        subscriber.complete();
-      })
-    }
-  }
+  // getData(url: string){
+  //   this.get('')
+  // }
 }

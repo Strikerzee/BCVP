@@ -50,20 +50,22 @@ function set_token_null(obj)
     })
 };
 
-function generate_token(obj, resp,dash) {
-    resp.setHeader('Content-Type', 'application/json');
+function generate_token(obj, resp, dash) {
     bcrypt.hash(obj,saltrounds, function(err,hash)
     {
         if(err)
         {
-            resp.end(JSON.stringify({ success: false, message: "error while generating token" }));
+            resp.json({ 
+                success: false, 
+                message: "error while generating token" 
+            });
             // resp.send("error while generating token\n");
             throw err;
         }
         else
         {
-            var sql = "update People set token = ? where VoterID = " + obj;
-            connection.query(sql,hash, (error, rows) => {
+            var sql = `update People set token = '${hash}' where VoterID = '${obj.split(' ', 1)[0]}'`;
+            connection.query(sql, (error, rows) => {
                 if(error)
                 {
                     throw error;
@@ -72,9 +74,12 @@ function generate_token(obj, resp,dash) {
                 {
                     if(dash == false)
                     {
-                        resp.json({ 
-                            token: hash,
-                            user_id: id
+                        resp.json({
+                            success: true,
+                            message: { 
+                                token: hash,
+                                user_id: obj.split(' ', 1)[0]
+                            }
                         });
                     }
                     
@@ -91,10 +96,13 @@ function generate_token(obj, resp,dash) {
                             else
                             {
                                 let response = {
-                                    candidate_details: row,
-                                    user_details: {
-                                        token: hash,
-                                        user_id: id
+                                    success: true,
+                                    message: {
+                                        candidate_details: row,
+                                        user_details: {
+                                            token: hash,
+                                            user_id: obj.split(' ', 1)[0]
+                                        }
                                     }
                                 }
                                 resp.json(response);
@@ -107,11 +115,12 @@ function generate_token(obj, resp,dash) {
     })
 }
 
-router.post('/v1/login-backend', jsonencodedparser, function(req, resp) {
-    resp.setHeader('Content-Type', 'application/json');
-    var id =  req.body.id;
+router.post('/login', jsonencodedparser, function(req, resp) {
+    console.log('Login Request received');
+    resp.setHeader('Access-Control-Allow-Origin', '*');
+    var id = req.body.username;
     var password = req.body.password;
-    var sql = "select * from People where VoterID = " +  id;
+    var sql = "select * from People where VoterID = " +  `'${id}'`;
     connection.query(sql, (error, rows, fields) => {
         if(!!error) {
             throw error;
@@ -121,16 +130,17 @@ router.post('/v1/login-backend', jsonencodedparser, function(req, resp) {
             if(isEmpty(rows))
             {
                 console.log("Voter ID does not exist");
-                resp.end(JSON.stringify({ success: false, message: "Voter ID does not exist" }));
-                // resp.send("Voter ID does not exist\n");
+                resp.json({ 
+                    success: false, 
+                    message: "Voter ID does not exist" 
+                });
             }
             else
             {
                 hash = rows[0].Password;
                 bcrypt.compare(password, hash, function(err, res) 
                 {
-                    if(err)
-                    {
+                    if(err){
                         console.log(err);
                     }    
                     else
@@ -138,15 +148,15 @@ router.post('/v1/login-backend', jsonencodedparser, function(req, resp) {
                         if(res ==  true)
                         {
                             console.log("User is logged in");
-                            resp.end(JSON.stringify({ success: true, message: "User is logged in" }));
-                            // resp.send("user is logged in\n");
-                            generate_token(id, resp,false);
+                            generate_token(id + ' ' + password, resp, false);
                         }
                         else if(res == false)
                         {
                             console.log("password is wrong");
-                            resp.end(JSON.stringify({ success: false, message: "password is wrong" }));
-                            // resp.send("password is wrong\n");
+                            resp.json({
+                                success: false, 
+                                message: "password is wrong" 
+                            });
                         }
                     }
                 });
@@ -155,13 +165,12 @@ router.post('/v1/login-backend', jsonencodedparser, function(req, resp) {
     });
 });
 
-router.post('/v1/submit',jsonencodedparser, function(req, resp) {
-    resp.setHeader('Content-Type', 'application/json');
-    var id = req.body.id;
+router.post('/submit',jsonencodedparser, function(req, resp) {
+    var id = req.body.username;
     var token =  req.body.token;
     var sql2 =  "select token from People where VoterID = ?" ;
     var sql1 = "update People set Voted = 1 where VoterID = ?";
-    connection.query(sql2,id, (error, rows, fields) => {
+    connection.query(sql2, id, (error, rows, fields) => {
         if(error)
         {
             console.log(error);
@@ -169,16 +178,19 @@ router.post('/v1/submit',jsonencodedparser, function(req, resp) {
         else if(isEmpty(rows))
         {
             console.log("wrong Voter id");
-            resp.end(JSON.stringify({ success: false, message: "wrong Voter id" }));
-            // resp.send("wrong Voter id\n");
+            resp.json({ 
+                success: false, 
+                message: "wrong Voter id" 
+            });
         }
         else
         {
             var o_token = rows[0].token;
-            if(o_token == null)
-            {
-                resp.end(JSON.stringify({ success: false, message: "token did not match logged out" }));
-                // resp.send("token did not match logged out\n");
+            if(o_token == null){
+                resp.json({ 
+                    success: false, 
+                    message: "token did not match logged out" 
+                });
             }
             else if( token.trim() == o_token.toString())
             {
@@ -187,25 +199,30 @@ router.post('/v1/submit',jsonencodedparser, function(req, resp) {
                 });
                 console.log("token matched");    
                 set_token_null(id);
-                resp.end(JSON.stringify({ success: true, message: "User has Voted" }));
+                resp.json({ 
+                    success: true, 
+                    message: "User has Voted" 
+                });
             }
             else
             {
                 set_token_null(id);
-                resp.end(JSON.stringify({ success: false, message: "token did not match logging out" }));
-                console.log("token did not match"); 
+                resp.json({
+                    success: false, 
+                    message: "token did not match logging out" 
+                });
+                console.log("token did not match");
             }
 
         }
     });
 })
 
-router.post('/v1/dashboard', jsonencodedparser,function(req, resp) {
-    resp.setHeader('Content-Type', 'application/json');
-    var id = req.body.id;
+router.post('/dashboard', jsonencodedparser,function(req, resp) {
+    var id = req.body.username;
     var token =  req.body.token;
     var sql2 =  "select token from People where VoterID = ?";
-    connection.query(sql2,id, (error, rows, fields) => {
+    connection.query(sql2, id, (error, rows, fields) => {
         if(error)
         {
             console.log(error);
@@ -213,25 +230,29 @@ router.post('/v1/dashboard', jsonencodedparser,function(req, resp) {
         else if(isEmpty(rows))
         {
             console.log("wrong Voter id");
-            resp.end(JSON.stringify({ success: false, message: "wrong Voter id" }));
-            // resp.send("wrong Voter id\n");
+            resp.json({ 
+                success: false, 
+                message: "wrong Voter id" 
+            });
         }
         else
         {
             var o_token = rows[0].token;
-            if(o_token == null)
-            {
+            if(o_token == null){
                 set_token_null(id);
             }
             else if(token.trim() == o_token.toString())
             {
                 console.log("token matched");    
-                generate_token(id, resp, true);
+                generate_token(id + ' ' + resp, true);
             }
             else
             {
                 set_token_null(id);
-                resp.end(JSON.stringify({ success: false, message: "token did not match logging out" }));
+                resp.json({ 
+                    success: false, 
+                    message: "token did not match logging out" 
+                });
                 console.log("token did not match"); 
             }
 

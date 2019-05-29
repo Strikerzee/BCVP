@@ -3,6 +3,7 @@
     Log in with voter ID
   </h3>
   <div class="form-group">
+    <p *ngIf="errorMessage"> {{errorMessage}}</p>
     <label for="username" class="control-label"> 
       Username 
     </label> 

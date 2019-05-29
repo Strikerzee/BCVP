@@ -15,13 +15,23 @@ export class DataService {
       .pipe(map(response => response));
   }
 
-  get(id) { 
-    return this.http.get(this.url + '/' + id)
+  get(id:string) { 
+    let token = sessionStorage.getItem('token');
+    let user_id = sessionStorage.getItem('user_id');
+    return this.http.get(this.url + '/' + id, {
+      headers:{
+        'Authorization': 'Digest' + user_id + ':' + token
+      }
+    })
     .pipe(map(response => response));    
   }
 
-  create(resource) {
-    return this.http.post(this.url, JSON.stringify(resource))
+  create(resource:string) {
+    return this.http.post(this.url, JSON.stringify(resource), {
+      headers:{
+        'Content-Type': 'application/json'
+      }
+    })
     .pipe(map(response => response));
   }
 
@@ -30,7 +40,7 @@ export class DataService {
     .pipe(map(response => response));
   }
 
-  delete(id) {
+  delete(id:string) {
     return this.http.delete(this.url + '/' + id)
     .pipe(map(response => response))
       .toPromise();
