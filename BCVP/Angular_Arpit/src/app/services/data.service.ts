@@ -20,7 +20,7 @@ export class DataService {
     let user_id = sessionStorage.getItem('user_id');
     return this.http.get(this.url + '/' + id, {
       headers:{
-        'Authorization': 'Digest' + user_id + ':' + token
+        'Authorization': 'Digest ' + user_id + ':' + token
       }
     })
     .pipe(map(response => response));    

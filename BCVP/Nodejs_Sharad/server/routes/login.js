@@ -7,10 +7,10 @@ var saltrounds = 10;
 let urlencodedparser = bodyparser.urlencoded({extended: false});
 let jsonencodedparser = bodyparser.json();
 
-router.options('/login', (req, res) => {
-    res.set('Access-Control-Allow-Methods', 'OPTIONS, POST');
+router.options('*', (req, res) => {
+    res.set('Access-Control-Allow-Methods', 'OPTIONS, POST, GET');
     res.set('Access-Control-Allow-Origin', '*');
-    res.set('Access-Control-Allow-Headers', 'Content-Type');
+    res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     res.send();
 })
 let connection = mysql.createConnection({
@@ -40,13 +40,9 @@ function isEmpty(obj) {
 
 function set_token_null(obj)
 {
-    resp.setHeader('Content-Type', 'application/json');
     connection.query("update People set token = NULL where VoterID = ?",obj, (err, rows) => {
         if(err)
-         throw err;
-        else
-            resp.end(JSON.stringify({ success: false, message: "token did not match logging out" }));
-            // resp.send("token did not match logging out\n");
+            console.log(err.message);
     })
 };
 
@@ -59,16 +55,14 @@ function generate_token(obj, resp, dash) {
                 success: false, 
                 message: "error while generating token" 
             });
-            // resp.send("error while generating token\n");
-            throw err;
+            console.log(err.message);
         }
         else
         {
             var sql = `update People set token = '${hash}' where VoterID = '${obj.split(' ', 1)[0]}'`;
             connection.query(sql, (error, rows) => {
-                if(error)
-                {
-                    throw error;
+                if(error){
+                    console.log(error.message)
                 }
                 else
                 {
@@ -88,10 +82,12 @@ function generate_token(obj, resp, dash) {
                         // resp.send(hash);
                         query_for_candidates = "select * from Candidates"
                         connection.query(query_for_candidates,(er,row) =>{
-                            if(er)
-                            {
-                                throw er;
-                                
+                            if(er){
+                                console.log(er.message);
+                                resp.status(500).json({
+                                    success: false,
+                                    message: 'Internal Server Error'
+                                })
                             }
                             else
                             {
@@ -170,6 +166,7 @@ router.post('/submit',jsonencodedparser, function(req, resp) {
     var token =  req.body.token;
     var sql2 =  "select token from People where VoterID = ?" ;
     var sql1 = "update People set Voted = 1 where VoterID = ?";
+    resp.set('Access-Control-Allow-Origin', '*');
     connection.query(sql2, id, (error, rows, fields) => {
         if(error)
         {
@@ -218,9 +215,12 @@ router.post('/submit',jsonencodedparser, function(req, resp) {
     });
 })
 
-router.post('/dashboard', jsonencodedparser,function(req, resp) {
-    var id = req.body.username;
-    var token =  req.body.token;
+router.get('/dashboard', jsonencodedparser,function(req, resp) {
+    console.log('Received post request');
+    resp.set('Access-Control-Allow-Origin', '*');
+    let authArray = req.get('Authorization').toString().split(' ').pop().split(':');
+    var id = authArray[0];
+    var token =  authArray[1];
     var sql2 =  "select token from People where VoterID = ?";
     connection.query(sql2, id, (error, rows, fields) => {
         if(error)
@@ -244,7 +244,7 @@ router.post('/dashboard', jsonencodedparser,function(req, resp) {
             else if(token.trim() == o_token.toString())
             {
                 console.log("token matched");    
-                generate_token(id + ' ' + resp, true);
+                generate_token(id + ' ' + token, resp, true);
             }
             else
             {

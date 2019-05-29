@@ -7,11 +7,14 @@ import { DataService } from './data.service';
 })
 export class ElectionCandidateService extends DataService{
 
-  // constructor(http: HttpClient) {
-  //   super('https://localhost:4000/v1/login-backend/login', http);
-  // }
+  constructor(http: HttpClient) {
+    super('https://localhost:4000/v1/login-backend', http);
+  }
 
-  // getData(url: string){
-  //   this.get('')
-  // }
+  getData(){
+    return this.get('dashboard');
+  }
+  submitVote(candidate){
+    return this.create(candidate);
+  }
 }
