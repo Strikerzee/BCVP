@@ -1,8 +1,8 @@
 let mysql = require('mysql');
 const bcrypt = require('bcrypt');
 var saltrounds = 10;
-let username = 'newuser';
-let password = 'pass@Me12';
+let username = 'Arnav';
+let password = 'Arnav@123';
 
 let connection = mysql.createConnection({
     host: 'localhost',
@@ -22,8 +22,8 @@ connection.connect( (error) => {
     }
 });
 
-bcrypt.hash(password, saltrounds).then((hash)=>{
-    connection.query(`Insert INTO People (VoterID, Password) values ('${username}', '${hash}')`, (err, rows)=>{
+bcrypt.hash(password, saltrounds).then((hash) => {
+    connection.query(`Insert INTO People (VoterID, Password) values ('${username}', '${hash}')`, (err, rows) => {
         if(err){
             console.log(err.message);
         }
@@ -32,5 +32,5 @@ bcrypt.hash(password, saltrounds).then((hash)=>{
         }
     });
 }).catch((err)=>{
-    console.log('Cann\'t generate hash', err.message);
+    console.log('Can\'t generate hash', err.message);
 })

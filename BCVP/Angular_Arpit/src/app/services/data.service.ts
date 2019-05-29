@@ -20,16 +20,21 @@ export class DataService {
     let user_id = sessionStorage.getItem('user_id');
     return this.http.get(this.url + '/' + id, {
       headers:{
-        'Authorization': 'Digest ' + user_id + ':' + token
+        [token && user_id ? 'Authorization':'']: token && user_id ? ('Digest ' + user_id + ':' + token):''
       }
     })
-    .pipe(map(response => response));    
+    .pipe(map(response => response));
   }
 
-  create(resource:string) {
-    return this.http.post(this.url, JSON.stringify(resource), {
+  create(resource, id:string='') {
+    let token = sessionStorage.getItem('token');
+    let user_id = sessionStorage.getItem('user_id');
+    
+    let resId = id?this.url+'/' + id:this.url;
+    return this.http.post(resId, JSON.stringify(resource), {
       headers:{
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        [token && user_id ? 'Authorization':'']: token && user_id ? ('Digest ' + user_id + ':' + token):''
       }
     })
     .pipe(map(response => response));

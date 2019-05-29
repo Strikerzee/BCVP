@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import {ElectionCandidateService} from '../services/election-candidate.service';
 import { FormGroup, FormControl, FormArray } from '@angular/forms';
 import { Router } from '@angular/router';
-import { stringify } from 'querystring';
 
 @Component({
   selector: 'vote',
@@ -17,21 +16,24 @@ export class VoteComponent implements OnInit {
     party: string
   } [] = [];
   voteForm = new FormGroup({
-    name: new FormArray([])
+    name: new FormArray([]),
+    candidateName: new FormControl('')
   });
   constructor(private service: ElectionCandidateService, private route: Router) {
   }
 
   ngOnInit() {
-    this.service.getData()
+    this.service.getData('dashboard')
     .subscribe((response: {
       success: boolean,
-      message:{
-        candidate_details: {
+      message:
+      {
+        candidate_details: 
+        {
           name: string,
           party: string
-        }[],
-        user_details:{
+        }[], user_details:
+        {
           user_id: string,
           token: string
         }
@@ -48,9 +50,20 @@ export class VoteComponent implements OnInit {
     })
   }
 
-  vote(){
-    console.log('ngSubmit works!');
-    (this.voteForm.get('name') as FormArray)
+  vote() {
+    this.service.postData({
+      candidate: this.voteForm.get('candidateName').value
+    }, 'submit')
+    .subscribe((response: {
+      success: boolean,
+      message: string
+      })=>{
+      if(response.success){
+        sessionStorage.removeItem('user_id');
+        sessionStorage.removeItem('token');
+        console.log('user voted!');
+      }
+    })
   }
 
 }

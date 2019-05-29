@@ -61,7 +61,7 @@ function generate_token(obj, resp, dash) {
         {
             var sql = `update People set token = '${hash}' where VoterID = '${obj.split(' ', 1)[0]}'`;
             connection.query(sql, (error, rows) => {
-                if(error){
+                if(error) {
                     console.log(error.message)
                 }
                 else
@@ -79,6 +79,7 @@ function generate_token(obj, resp, dash) {
                     
                     else if(dash == true)
                     {
+                        console.log('Fetching candidates.....');
                         // resp.send(hash);
                         query_for_candidates = "select * from Candidates"
                         connection.query(query_for_candidates,(er,row) =>{
@@ -162,11 +163,12 @@ router.post('/login', jsonencodedparser, function(req, resp) {
 });
 
 router.post('/submit',jsonencodedparser, function(req, resp) {
-    var id = req.body.username;
-    var token =  req.body.token;
+    resp.set('Access-Control-Allow-Origin', '*');
+    let authArray = req.get('Authorization').toString().split(' ').pop().split(':');
+    var id = authArray[0];
+    var token =  authArray[1];
     var sql2 =  "select token from People where VoterID = ?" ;
     var sql1 = "update People set Voted = 1 where VoterID = ?";
-    resp.set('Access-Control-Allow-Origin', '*');
     connection.query(sql2, id, (error, rows, fields) => {
         if(error)
         {
