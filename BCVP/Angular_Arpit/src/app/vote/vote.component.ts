@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {ElectionCandidateService} from '../services/election-candidate.service';
 import { FormGroup, FormControl, FormArray } from '@angular/forms';
 import { Router } from '@angular/router';
+import { stringify } from 'querystring';
 
 @Component({
   selector: 'vote',
@@ -14,56 +15,51 @@ export class VoteComponent implements OnInit {
   candidates: {
     name: string,
     party: string
-  } [] = [];
+  } [];
   voteForm = new FormGroup({
-    name: new FormArray([]),
-    candidateName: new FormControl('')
+    name: new FormArray([])
   });
-  constructor(private service: ElectionCandidateService, private route: Router) {
+  route: Router;
+  service: ElectionCandidateService;
+  constructor(service: ElectionCandidateService, route: Router) {
+    this.route = route;
+    this.candidates = [{
+      name: "Rajendra Avasthi",
+      party: "BJP"
+    },
+    {
+      name: "Loki",
+      party: "Congress"
+    },
+    {
+      name: "Ajam Khan",
+      party: "SP"
+    },
+    {
+      name: 'Seema Upadhyay',
+      party: "BSP"
+    }
+  ]
+    for(let newCandidate of this.candidates){
+      (this.voteForm.get('name') as FormArray).push(new FormControl(newCandidate.name))
+    }
   }
 
   ngOnInit() {
-    this.service.getData('dashboard')
-    .subscribe((response: {
-      success: boolean,
-      message:
-      {
-        candidate_details: 
-        {
-          name: string,
-          party: string
-        }[], user_details:
-        {
-          user_id: string,
-          token: string
-        }
-      }
-    })=>{
-      if(response.success){
-        sessionStorage.setItem('user_id', response.message.user_details.user_id);
-        sessionStorage.setItem('token', response.message.user_details.token);
-        this.candidates = this.candidates.concat(response.message.candidate_details);
-        for(let newCandidate of this.candidates){
-          (this.voteForm.get('name') as FormArray).push(new FormControl(newCandidate.name));
-        }
-      }
-    })
+    // (this.service.getData("https://localhost:8000/candidates"))
+    //   .subscribe((response)=>{
+    //     this.candidates.push({
+    //       name: response.name,
+    //       party: response.party
+    //     });
+    //   },
+    //   (error)=>{
+    //     console.log(error);
+    //   })
   }
 
-  vote() {
-    this.service.postData({
-      candidate: this.voteForm.get('candidateName').value
-    }, 'submit')
-    .subscribe((response: {
-      success: boolean,
-      message: string
-      })=>{
-      if(response.success){
-        sessionStorage.removeItem('user_id');
-        sessionStorage.removeItem('token');
-        console.log('user voted!');
-      }
-    })
+  vote(){
+    console.log('ngSubmit works!');
   }
 
 }

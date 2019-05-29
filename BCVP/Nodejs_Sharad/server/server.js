@@ -5,8 +5,8 @@ let path = require('path')
 let login = require('./routes/login.js');
 
 let app = express();
-// app.options('*', cors());
-// app.use(cors());
+app.options('*', cors());
+app.use(cors());
 
 app.use('/v1/login-backend', login);
 

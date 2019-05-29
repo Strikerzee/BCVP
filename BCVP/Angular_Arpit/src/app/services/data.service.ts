@@ -15,28 +15,13 @@ export class DataService {
       .pipe(map(response => response));
   }
 
-  get(id:string) { 
-    let token = sessionStorage.getItem('token');
-    let user_id = sessionStorage.getItem('user_id');
-    return this.http.get(this.url + '/' + id, {
-      headers:{
-        [token && user_id ? 'Authorization':'']: token && user_id ? ('Digest ' + user_id + ':' + token):''
-      }
-    })
-    .pipe(map(response => response));
+  get(id) { 
+    return this.http.get(this.url + '/' + id)
+    .pipe(map(response => response));    
   }
 
-  create(resource, id:string='') {
-    let token = sessionStorage.getItem('token');
-    let user_id = sessionStorage.getItem('user_id');
-    
-    let resId = id?this.url+'/' + id:this.url;
-    return this.http.post(resId, JSON.stringify(resource), {
-      headers:{
-        'Content-Type': 'application/json',
-        [token && user_id ? 'Authorization':'']: token && user_id ? ('Digest ' + user_id + ':' + token):''
-      }
-    })
+  create(resource) {
+    return this.http.post(this.url, JSON.stringify(resource))
     .pipe(map(response => response));
   }
 
@@ -45,7 +30,7 @@ export class DataService {
     .pipe(map(response => response));
   }
 
-  delete(id:string) {
+  delete(id) {
     return this.http.delete(this.url + '/' + id)
     .pipe(map(response => response))
       .toPromise();

@@ -3,7 +3,7 @@
   <ul>
     <div class="container" *ngFor="let candidate of voteForm.get('name').controls">
       <label class="container">{{candidate.value}}
-      <input type="radio" name="candidateName" formControlName="candidateName" value="{{candidate.value}}">
+      <input type="radio" checked="checked" name="name">
       <span class="checkmark"></span>
       </label>
     </div>

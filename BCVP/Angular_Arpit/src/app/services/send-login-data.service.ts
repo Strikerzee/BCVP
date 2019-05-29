@@ -6,7 +6,7 @@ import { Injectable } from '@angular/core';
 export class SendLoginDataService extends DataService {
 
   constructor(http: HttpClient) {
-    super('https://localhost:4000/v1/login-backend/login', http);
+    super('/api/v1/login-backend', http);
   }
 
   sendData(credentials) {

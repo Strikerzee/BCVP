@@ -11,7 +11,6 @@ import { Router } from '@angular/router';
 export class LoginComponent implements OnInit {
   submitted = false;
   logged_in = false;
-  errorMessage = null;
   userForm: FormGroup;
   serviceErrors:any = {};
   token: string;
@@ -31,10 +30,8 @@ export class LoginComponent implements OnInit {
   ngOnInit()
   {
     this.userForm = this.formBuilder.group({
-      // don't allow ':' in username as it is used in authorization header
-      // to seperate username and token
-      username: ['', [Validators.required, Validators.maxLength(40), Validators.minLength(1)]],
-  		password: ['', [Validators.required, Validators.minLength(8), Validators.pattern('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])[a-zA-Z0-9@_#]+$')]]
+  		username: ['', [Validators.required, Validators.maxLength(10), Validators.minLength(10)]],
+  		password: ['', [Validators.required, Validators.minLength(5), Validators.pattern('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])[a-zA-Z0-9]+$')]]
   	});
   }
 
@@ -51,24 +48,12 @@ export class LoginComponent implements OnInit {
       // Now send data to the backend MySQL and check
       // if password is correct, get token in return and 
       // redirect or error if password is wrong.
+      let token;
       this.service.sendData(this.userForm.value)
-        .subscribe((response:{
-          success: boolean,
-          message: {
-            user_id: string,
-            token: string
-          }
-        }) => {
-          if(response.success){
-            sessionStorage.setItem('user_id', response.message.user_id);
-            sessionStorage.setItem('token', response.message.token);
-            this.router.navigate(['/vote']);
-            this.logged_in = true;
-          }
-          else{
-            this.errorMessage = response.message;
-            console.log('set the error message');
-          }
+        .subscribe(response => {
+          token = response;
+          this.router.navigate(['/vote']);
+          this.logged_in = true;
         });
     }
   }

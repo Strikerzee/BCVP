@@ -5,7 +5,7 @@ import {RouterModule} from '@angular/router';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LoginComponent } from './login/login.component';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms'
+import { ReactiveFormsModule } from '@angular/forms'
 import { SendLoginDataService } from './services/send-login-data.service';
 import { VoteComponent } from './vote/vote.component';
 import { DataService } from './services/data.service';
@@ -19,7 +19,6 @@ import { DataService } from './services/data.service';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
     RouterModule.forRoot([
