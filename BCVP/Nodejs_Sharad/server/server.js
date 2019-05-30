@@ -6,12 +6,13 @@ let app = express();
 let fs = require('fs');
 let path = require('path')
 let login = require('./routes/login');
+let admin = require('./routes/admin');
 // app.options('*', cors());
 // app.use(cors());
 // set secret variable
 app.set('secret', 'thisismysecret');
 app.use('/v1/login-backend', login);
-
+app.use('/v1/admin/login-backend', admin);
 app.get('/', (req, res)=>{
     res.send('<h1> Hello World </h1>');
 });
