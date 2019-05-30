@@ -1,13 +1,20 @@
 let mysql = require('mysql');
-let router = require('express').Router();
+var fs = require("fs");
+var express = require('express');
+let login = express.Router();
+const fabric_router = require('./app');
 let bodyparser = require('body-parser');
 const bcrypt = require('bcrypt');
 var saltrounds = 10;
-
+var http = require("http");
 let urlencodedparser = bodyparser.urlencoded({extended: false});
 let jsonencodedparser = bodyparser.json();
+const request = require('request');
+// const fetch = require('node-fetch');
+const https = require("https");
 
-router.options('*', (req, res) => {
+login.use('/fabric', fabric_router);
+login.options('*', (request, res) => {
     res.set('Access-Control-Allow-Methods', 'OPTIONS, POST, GET');
     res.set('Access-Control-Allow-Origin', '*');
     res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -19,7 +26,7 @@ let connection = mysql.createConnection({
     password: '',
     database: 'sampledatabase'
 })
-connection.connect( (error) => {
+connection.connect((error) => {
     if(!!error)
     {
         console.log("Error",error);
@@ -40,7 +47,7 @@ function isEmpty(obj) {
 
 function set_token_null(obj)
 {
-    connection.query("update People set token = NULL where VoterID = ?",obj, (err, rows) => {
+    connection.query("update People set token = NULL where VoterID = ?", obj, (err, rows) => {
         if(err)
             console.log(err.message);
     })
@@ -83,7 +90,7 @@ function generate_token(obj, resp, dash) {
                         // resp.send(hash);
                         query_for_candidates = "select * from Candidates"
                         connection.query(query_for_candidates,(er,row) =>{
-                            if(er){
+                            if(er) {
                                 console.log(er.message);
                                 resp.status(500).json({
                                     success: false,
@@ -112,11 +119,11 @@ function generate_token(obj, resp, dash) {
     })
 }
 
-router.post('/login', jsonencodedparser, function(req, resp) {
+login.post('/login', jsonencodedparser, function(request, resp) {
     console.log('Login Request received');
     resp.setHeader('Access-Control-Allow-Origin', '*');
-    var id = req.body.username;
-    var password = req.body.password;
+    var id = request.body.username;
+    var password = request.body.password;
     var sql = "select * from People where VoterID = " +  `'${id}'`;
     connection.query(sql, (error, rows, fields) => {
         if(!!error) {
@@ -137,9 +144,9 @@ router.post('/login', jsonencodedparser, function(req, resp) {
                 hash = rows[0].Password;
                 bcrypt.compare(password, hash, function(err, res) 
                 {
-                    if(err){
+                    if(err) {
                         console.log(err);
-                    }    
+                    }
                     else
                     {
                         if(res ==  true)
@@ -162,7 +169,7 @@ router.post('/login', jsonencodedparser, function(req, resp) {
     });
 });
 
-router.post('/submit',jsonencodedparser, function(req, resp) {
+login.post('/submit',jsonencodedparser, function(req, resp) {
     resp.set('Access-Control-Allow-Origin', '*');
     let authArray = req.get('Authorization').toString().split(' ').pop().split(':');
     var id = authArray[0];
@@ -185,15 +192,85 @@ router.post('/submit',jsonencodedparser, function(req, resp) {
         else
         {
             var o_token = rows[0].token;
-            if(o_token == null){
-                resp.json({ 
+            if(o_token == null) {
+                resp.json({
                     success: false, 
                     message: "token did not match logged out" 
                 });
             }
-            else if( token.trim() == o_token.toString())
+            else if(token.trim() == o_token.toString())
             {
-                connection.query(sql1,id, (error, rows) => {
+                let jsonData = JSON.parse(fs.readFileSync('Org1.json', 'utf-8'))
+                Bearer_token = "Bearer " + jsonData.token;
+                
+                let Party = req.body.candidate;
+                var reqBody = '{"peers": ["peer0.org1.example.com", "peer2.org1.example.com","peer3.org1.example.com"],"fcn":"vote","args":[\"'+Party+'\"]}';
+
+                let request = https.request({
+                    port: 4000,
+                    hostname: 'localhost',
+                    method: 'POST',
+                    path: '/v1/login-backend/fabric/channels/voting-channel/chaincodes/voting-block',
+                    headers:{
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Content-Length': Buffer.byteLength(reqBody)
+                    }
+                }, (res)=>{
+                    if(res.statusCode != 200){
+                        console.log(res.statusCode);
+                    }
+                    else{
+                        console.log(res);
+                    }
+                })
+                request.write(reqBody, (err)=>{
+                    console.log(err.message);
+                })
+                request.on('error', (err)=>{
+                    console.log(err.message);
+                })
+                request.end();
+                // request.write(reqBody);
+                // request.end();
+                // const agent = new https.Agent({
+                //     method: 'post',
+                //     body:    JSON.stringify(reqBody),
+                //     headers: { 'Content-Type': 'application/json' },
+                //     rejectUnauthorized: false
+                //   });
+                // fetch('https://localhost:4000/v1/login-backend/fabric/channels/voting-channel/chaincodes/voting-block', { agent })
+                  
+                // const options = {
+                //     hostname: 'localhost',
+                //     port: 4000,
+                //     path: '/v1/login-backend/fabric/channels/voting-channel/chaincodes/voting-block',
+                //     method: 'POST',
+                //     headers: {
+                //         'Content-Type': 'application/json'
+                //     }
+                // };
+                  
+                //   const requ = http.request(options, (res) => {
+                //     console.log(`STATUS: ${res.statusCode}`);
+                //     console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
+                //     res.setEncoding('utf8');
+                //     res.on('data', (chunk) => {
+                //       console.log(`BODY: ${chunk}`);
+                //     });
+                //     res.on('end', () => {
+                //       console.log('No more data in response.');
+                //     });
+                //   });
+                  
+                //   requ.on('error', (e) => {
+                //     console.error(`problem with request: ${e.message}`);
+                //   });
+                  
+                //   // Write data to request body
+                //   requ.write(reqBody);
+                //   requ.end();
+
+                connection.query(sql1, id, (error, rows) => {
                     console.log("user has voted");
                 });
                 console.log("token matched");    
@@ -217,10 +294,10 @@ router.post('/submit',jsonencodedparser, function(req, resp) {
     });
 })
 
-router.get('/dashboard', jsonencodedparser,function(req, resp) {
+login.get('/dashboard', jsonencodedparser,function(request, resp) {
     console.log('Received post request');
     resp.set('Access-Control-Allow-Origin', '*');
-    let authArray = req.get('Authorization').toString().split(' ').pop().split(':');
+    let authArray = request.get('Authorization').toString().split(' ').pop().split(':');
     var id = authArray[0];
     var token =  authArray[1];
     var sql2 =  "select token from People where VoterID = ?";
@@ -240,7 +317,7 @@ router.get('/dashboard', jsonencodedparser,function(req, resp) {
         else
         {
             var o_token = rows[0].token;
-            if(o_token == null){
+            if(o_token == null) {
                 set_token_null(id);
             }
             else if(token.trim() == o_token.toString())
@@ -262,9 +339,9 @@ router.get('/dashboard', jsonencodedparser,function(req, resp) {
     });
 })
 
-// router.post('/login', urlencodedparser, (req, res)=>{
+// login.post('/login', urlencodedparser, (request, res)=>{
 //     console.log('Login request received');
-//     let cred = req.body;
+//     let cred = request.body;
 //     let query = "select username, password from userData where username = " + cred.username + " and password = " + cred.password;
 //     connection.query(query, (err, rows)=>{
 //         if(err)
@@ -276,4 +353,4 @@ router.get('/dashboard', jsonencodedparser,function(req, resp) {
 //     })
 // })
 
-module.exports = router;
+module.exports = login;

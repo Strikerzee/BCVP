@@ -3,7 +3,7 @@
    "port":"4000",
    "jwt_expiretime": "36000",
    "channelName":"voting-channel",
-   "CC_SRC_PATH":"../../chaincode/voting-block",
+   "CC_SRC_PATH":"../../../Hyperledger-Fabric_Arnav/fabric-samples/chaincode/voting-block",
    "eventWaitTime":"30000",
    "admins":[
       {

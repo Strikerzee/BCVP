@@ -1,4 +1,4 @@
-/**
+  /**
  * Copyright 2017 IBM All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
@@ -20,9 +20,8 @@ var express = require('express');
 var session = require('express-session');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var http = require('http');
 var util = require('util');
-var app = express();
+var app = express.Router();
 var expressJWT = require('express-jwt');
 var jwt = require('jsonwebtoken');
 var bearerToken = require('express-bearer-token');
@@ -52,8 +51,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
 	extended: false
 }));
-// set secret variable
-app.set('secret', 'thisismysecret');
+
 app.use(expressJWT({
 	secret: 'thisismysecret'
 }).unless({
@@ -90,18 +88,19 @@ app.use(function(req, res, next) {
 ///////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// START SERVER /////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-var server = http.createServer(app).listen(port, function() {});
-logger.info('****************** SERVER STARTED ************************');
-logger.info('***************  http://%s:%s  ******************',host,port);
-server.timeout = 240000;
 
-function getErrorMessage(field) {
-	var response = {
-		success: false,
-		message: field + ' field is missing or Invalid in the request'
-	};
-	return response;
-}
+// var server = http.createServer(app).listen(port, function() {});
+// logger.info('****************** SERVER STARTED ************************');
+// logger.info('***************  http://%s:%s  ******************',host,port);
+// server.timeout = 240000;
+
+// function getErrorMessage(field) {
+// 	var response = {
+// 		success: false,
+// 		message: field + ' field is missing or Invalid in the request'
+// 	};
+// 	return response;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////// REST ENDPOINTS START HERE ///////////////////////////
@@ -428,3 +427,5 @@ app.get('/channels', async function(req, res) {
 	let message = await query.getChannels(peer, req.username, req.orgname);
 	res.send(message);
 });
+
+module.exports = app;
